@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-
 # Import the dataset
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
@@ -20,6 +19,8 @@ df.label = encode.fit_transform(df.label)
 
 X = df.iloc[:, df.columns != 'label'].values
 Y = df.iloc[:, -1].values
+print(X)
+print(Y)
 
 # Split the dataset into training and test set
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.20, random_state=0)
@@ -57,28 +58,47 @@ plt.ylabel('Actual Label')
 plt.xlabel('Predicted label')
 plt.show()
 
-
 #Correlation matrix
 corrMatrix = df.corr()
 sns.heatmap(corrMatrix, annot=True)
 plt.show()
 
-def train_with_the_data(cols, index):
+def train_with_the_data(cols):
     X_train = df[cols]
     Y_train = df['label']
-
-    S_scaler = StandardScaler()
-    X_train = S_scaler.fit_transform(X_train)
+    # print(X_train)
+    # print(Y_train)
 
     train_X, test_X, train_Y, test_Y = train_test_split(X_train, Y_train, test_size=0.2, random_state=0)
 
-    lr = LogisticRegression()
+    # Feature Scaling
+    sc = StandardScaler()
+    train_X = sc.fit_transform(train_X)
+    test_X = sc.transform(test_X)
+
+    lr = LogisticRegression(random_state=0)
     lr.fit(train_X, train_Y)
 
     y_pred = lr.predict(test_X)
-    print(f'\nAccuracy on {index} cols score on test data : {accuracy_score(test_Y, y_pred)}')
+    print(f'\nAccuracy on {cols} cols score on test data : {accuracy_score(test_Y, y_pred)}')
     
   
-cols_name = df.columns
-for i in range(1, len(df.columns)):
-    train_with_the_data(cols=cols_name[:i], index=i)
+# cols_name = df.columns
+# for i in range(1, len(df.columns)):
+#     train_with_the_data(cols=cols_name[:i], index=i)
+
+
+# Accuracy over the features which don't have correlation value more than +70 or -70
+cols_name = ['meanfreq', 'IQR', 'skew', 'sp.ent', 'mode', 'meanfun', 'minfun', 'maxfun', 'meandom', 'mindom', 'modindx']
+train_with_the_data(cols=cols_name)
+
+
+# Accuracy over the features wheich don't have correlation value more than +80
+cols_name = ['meanfreq', 'sd', 'IQR', 'Q75', 'centroid', 'skew', 'sfm', 'mode', 'meanfun', 'minfun', 'maxfun', 'meandom', 'mindom', 'modindx']
+train_with_the_data(cols=cols_name)
+
+# Accuracy over the features wheich don't have high correlation each other
+
+print("Final Accuracy ----> ")
+cols_name = ['IQR', 'kurt', 'mode', 'meanfun', 'minfun', 'modindx']
+train_with_the_data(cols=cols_name)
